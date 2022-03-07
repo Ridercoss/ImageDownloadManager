@@ -3,6 +3,8 @@ using System.Text;
 using System.Net;
 using System.IO;
 using System.IO.Compression;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace ImageDownloadManager {
     
@@ -10,7 +12,7 @@ namespace ImageDownloadManager {
 
         public string downloadsDir = "./downloads";
         public string imagepacktxt = "./imagepack.txt";
-        public string[] uriArray;
+        public List<string> uriList = new List<string>();
         public void GetImageFromUri(string uri) {
             // Administar los protocolos SSL3 para el HTTPS
             ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
@@ -19,11 +21,9 @@ namespace ImageDownloadManager {
             WebClient cliente = new WebClient();
             // Verificar que existe el directorio de descargas
             EnsurePath();
-            // Verificar que existe el archivo de enlaces de descarga
-            EnsureTextFileStorage();
             // Obtener Nombre de la imagen, y ruta de guardado
             string[] urio = uri.Split('/');
-            String pathFinal = downloadsDir + urio[ urio.Length - 1 ];
+            string pathFinal = downloadsDir + urio[ urio.Length - 1 ];
             // Descargar recurso
             cliente.DownloadFile( uri, pathFinal );
 
@@ -55,14 +55,23 @@ namespace ImageDownloadManager {
         public void SaveUrlImage( string url ) {
             
             EnsureTextFileStorage();
+            uriList.Add( url );
+        }
 
-            if ( uriArray.Length != 0 ) {
-                uriArray[ uriArray.Length + 1] = url;
-            } else {
-                uriArray[0] = url;
+        public void WriteListUrls() {
+            File.WriteAllLines(imagepacktxt, uriList);
+        }
+
+        public void EmptyFileList() {
+            File.WriteAllText(imagepacktxt, string.Empty);
+        }
+
+        public void DownloadPackage() {
+            List<string> urls = new List<string>( File.ReadAllLines(imagepacktxt) );
+
+            foreach ( var uri in urls ) {
+                GetImageFromUri( uri );
             }
-
-            File.AppendAllLines(imagepacktxt, uriArray);
         }
     }
 
