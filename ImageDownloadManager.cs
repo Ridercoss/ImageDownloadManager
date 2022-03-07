@@ -23,7 +23,7 @@ namespace ImageDownloadManager {
             EnsurePath();
             // Obtener Nombre de la imagen, y ruta de guardado
             string[] urio = uri.Split('/');
-            string pathFinal = downloadsDir + urio[ urio.Length - 1 ];
+            string pathFinal = downloadsDir + "/" + urio[ urio.Length - 1 ];
             // Descargar recurso
             cliente.DownloadFile( uri, pathFinal );
 
